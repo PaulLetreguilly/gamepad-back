@@ -193,7 +193,7 @@ app.get("/user", async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
-app.post("/create/collection", isAuthenticated, async (req, res) => {
+app.post("/create/favorite", isAuthenticated, async (req, res) => {
   //   const checkFavorite = await Favorite.findOne({
   //     user: req.fields.user,
   //     game: req.fields.game,
@@ -213,7 +213,7 @@ app.post("/create/collection", isAuthenticated, async (req, res) => {
   //   res.send("Data received");
 });
 
-app.get("/collection", isAuthenticated, async (req, res) => {
+app.get("/get/favorite", isAuthenticated, async (req, res) => {
   try {
     const user = req.user;
     res.status(200).json(user);
@@ -223,16 +223,7 @@ app.get("/collection", isAuthenticated, async (req, res) => {
 });
 app.post("/delete/favorite", isAuthenticated, async (req, res) => {
   try {
-    // console.log(req.fields.game.id);
-    // const user = req.user;
     const user = req.user;
-    // console.log(user._id);
-
-    // console.log(user.Collection);
-    // const favorite = await Favorite.findOne({
-    //   "game.slug": req.fields.game.slug,
-    //   user: user._id,
-    // });
     const favorite = await Favorite.findOne({
       "game.id": req.fields.game.id,
       user: user._id,
@@ -241,14 +232,110 @@ app.post("/delete/favorite", isAuthenticated, async (req, res) => {
       (fav) => fav.game.id !== req.fields.game.id
     );
     user.markModified("Collection");
-    // console.log("my favorite : ", favorite);
-    // console.log("my user :", req.user.Collection);
     await favorite.delete();
     await user.save();
     res.status(200).send("Favorite updated");
     console.log("done");
   } catch (error) {
     res.status(400).send(error.message);
+  }
+});
+
+app.post("/game/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find({
+      "game.slug": req.fields.slug,
+    }).populate("user");
+    // console.log(reviews);
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+app.post("/create/review", isAuthenticated, async (req, res) => {
+  try {
+    // console.log(req.fields);
+    const user = req.user;
+    const review = new Review({
+      user: user._id,
+      title: req.fields.title,
+      description: req.fields.text,
+      game: req.fields.game,
+    });
+    // console.log(review);
+    user.Reviews.push(review);
+    await review.save();
+    await user.save();
+    res.send("review created");
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+app.post("/review/like", isAuthenticated, async (req, res) => {
+  try {
+    // console.log(req.fields.game.id);
+    const user = req.user;
+    const review = await Review.findById(req.fields.id);
+
+    const liked = { user: user };
+    review.like.push(liked);
+    // console.log(review.like);
+    await review.save();
+    res.send("like registered");
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+app.post("/review/unlike", isAuthenticated, async (req, res) => {
+  try {
+    const user = req.user;
+    const review = await Review.findById(req.fields.id);
+    const arr = [];
+    for (let i = 0; i < review.like.length; i++) {
+      if (review.like[i].user.email !== req.fields.user) {
+        // console.log("different");
+        arr.push(review.like[i]);
+      }
+    }
+    review.like = arr;
+    // console.log("after filter ==>", review.like);
+    review.markModified("like");
+    await review.save();
+    res.status(200).send("like updated");
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+app.post("/review/dislike", isAuthenticated, async (req, res) => {
+  try {
+    const user = req.user;
+    const review = await Review.findById(req.fields.id);
+    const disliked = { user: user };
+    review.dislike.push(disliked);
+    await review.save();
+    res.status(200).send("dislike registered");
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+app.post("/review/undislike", isAuthenticated, async (req, res) => {
+  try {
+    const user = req.user;
+    const review = await Review.findById(req.fields.id);
+    const arr = [];
+    for (let i = 0; i < review.dislike.length; i++) {
+      if (review.dislike[i].user.email !== req.fields.user) {
+        arr.push(review.dislike[i]);
+      }
+    }
+    review.dislike = arr;
+    review.markModified("dislike");
+    await review.save();
+    res.status(200).send("dislike updated");
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 });
 
