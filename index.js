@@ -105,13 +105,12 @@ app.get("/game/series/:slug", async (req, res) => {
 
 app.post("/signup", async (req, res) => {
   try {
-    // console.log("second test log");
     const user = await User.findOne({ email: req.fields.email });
+    // console.log("test body : ", req.fields);
 
     if (user) {
       res.status(409).json({ message: "This email already has an account" });
     } else {
-      //   console.log("third test log");
       if (req.fields.email && req.fields.password && req.fields.username) {
         const token = uid2(64);
         const salt = uid2(64);
@@ -123,30 +122,32 @@ app.post("/signup", async (req, res) => {
           hash: hash,
           salt: salt,
           token: token,
-          //   to be continued.....
         });
-        // if (req.files.path) {
-        // console.log("pic : ", req.files.files.path);
-        // const pictureToUpload = await cloudinary.uploader.unsigned_upload(
-        //   req.files.files.path,
-        //   //   "gamepad_upload",
-        //   {
-        //     folder: `api/gamepad/user-image/${user._id}`,
-        //     public_id: "preview",
-        //   }
-        // );
-        // user.image = pictureToUpload;
-        // }
 
-        await user.save();
-        // res.send("fourth test log");
-
-        res.status(200).json({
+        const bodyToReturn = {
           _id: user._id,
           token: user.token,
           username: user.username,
-          //   image: user.image, //   to be continued....
-        });
+        };
+
+        if (req.files.files.path) {
+          console.log("pic path : ", req.files.files.path);
+          const pictureToUpload = await cloudinary.uploader.upload(
+            req.files.files.path,
+            //   "gamepad_upload",
+            {
+              folder: `gamepad/user-image/${user._id}`,
+              public_id: "preview",
+            }
+          );
+          //   console.log("pic registered :", pictureToUpload);
+          bodyToReturn.image = pictureToUpload;
+          user.image = pictureToUpload;
+        }
+
+        await user.save();
+
+        res.status(200).json(bodyToReturn);
       } else {
         res.status(400).json({ error: "Missing parameters" });
       }
@@ -168,7 +169,7 @@ app.post("/login", async (req, res) => {
           _id: user._id,
           token: user.token,
           username: user.username,
-          // image:user.image             to be continued....
+          image: user.image,
         });
       } else {
         res.status(401).json({ message: "Unauthorized" });
