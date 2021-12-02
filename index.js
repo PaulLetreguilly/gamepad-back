@@ -131,7 +131,7 @@ app.post("/signup", async (req, res) => {
         };
 
         if (req.files.files.path) {
-          console.log("pic path : ", req.files.files.path);
+          //   console.log("pic path : ", req.files.files.path);
           const pictureToUpload = await cloudinary.uploader.upload(
             req.files.files.path,
             //   "gamepad_upload",
@@ -335,6 +335,36 @@ app.post("/review/undislike", isAuthenticated, async (req, res) => {
     review.markModified("dislike");
     await review.save();
     res.status(200).send("dislike updated");
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+app.post("/user/update", isAuthenticated, async (req, res) => {
+  try {
+    console.log("route update :", req.fields);
+    const user = req.user;
+    if (req.fields.username) {
+      user.username = req.fields.username;
+    }
+    if (req.fields.email) {
+      user.email = req.fields.email;
+    }
+    if (req.fields.password) {
+      user.hash = SHA256(req.fields.password + user.salt).toString(encBase64);
+    }
+    if (req.files.files.path) {
+      const picToUpload = await cloudinary.uploader.upload(
+        req.files.files.path,
+        //   "gamepad_upload",
+        {
+          folder: `gamepad/user-image/${user._id}`,
+          public_id: "preview",
+        }
+      );
+      user.image = picToUpload;
+    }
+    await user.save();
+    res.status(200).json(user);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
