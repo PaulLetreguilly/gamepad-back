@@ -112,7 +112,7 @@ router.post("/user/update", isAuthenticated, async (req, res) => {
     if (req.fields.password) {
       user.hash = SHA256(req.fields.password + user.salt).toString(encBase64);
     }
-    if (req.files.files.path) {
+    if (req.files?.files?.path) {
       const picToUpload = await cloudinary.uploader.upload(
         req.files.files.path,
         //   "gamepad_upload",
