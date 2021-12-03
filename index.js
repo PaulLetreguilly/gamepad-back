@@ -246,7 +246,9 @@ app.post("/game/reviews", async (req, res) => {
   try {
     const reviews = await Review.find({
       "game.slug": req.fields.slug,
-    }).populate("user");
+    })
+      .populate("user")
+      .sort({ rank: -1 });
     // console.log(reviews);
     res.status(200).json(reviews);
   } catch (error) {
@@ -282,6 +284,7 @@ app.post("/review/like", isAuthenticated, async (req, res) => {
 
     const liked = { user: user };
     review.like.push(liked);
+    review.rank = review.like.length - review.dislike.length;
     // console.log(review.like);
     await review.save();
     res.send("like registered");
@@ -302,6 +305,7 @@ app.post("/review/unlike", isAuthenticated, async (req, res) => {
     }
     review.like = arr;
     // console.log("after filter ==>", review.like);
+    review.rank = review.like.length - review.dislike.length;
     review.markModified("like");
     await review.save();
     res.status(200).send("like updated");
@@ -315,6 +319,7 @@ app.post("/review/dislike", isAuthenticated, async (req, res) => {
     const review = await Review.findById(req.fields.id);
     const disliked = { user: user };
     review.dislike.push(disliked);
+    review.rank = review.like.length - review.dislike.length;
     await review.save();
     res.status(200).send("dislike registered");
   } catch (error) {
@@ -332,6 +337,7 @@ app.post("/review/undislike", isAuthenticated, async (req, res) => {
       }
     }
     review.dislike = arr;
+    review.rank = review.like.length - review.dislike.length;
     review.markModified("dislike");
     await review.save();
     res.status(200).send("dislike updated");
