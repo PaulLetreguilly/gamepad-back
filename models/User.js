@@ -12,6 +12,7 @@ const User = mongoose.model("User", {
   salt: String,
   token: String,
   hash: String,
+  security: { question: String, answer: String },
 });
 
 module.exports = User;
