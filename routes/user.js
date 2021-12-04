@@ -111,7 +111,9 @@ router.get("/user", async (req, res) => {
   try {
     // console.log("query", req.query._id);
     const user = await User.findById(req.query.id);
-    user.populate("Collection");
+    if (user) {
+      user.populate("Collection");
+    }
     // console.log(user);
     // console.log(user.Collection);
     res.status(200).json(user);
