@@ -64,4 +64,25 @@ router.get("/game/series/:slug", async (req, res) => {
   }
 });
 
+router.get("/games/platforms", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `https://api.rawg.io/api/platforms?key=${process.env.API_KEY}&page_size=51`
+    );
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+router.get("/games/genres", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `https://api.rawg.io/api/genres?key=${process.env.API_KEY}`
+    );
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;

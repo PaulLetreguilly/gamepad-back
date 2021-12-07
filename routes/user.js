@@ -24,6 +24,8 @@ router.post("/signup", async (req, res) => {
     } else {
       if (req.fields.question && req.fields.answer) {
         if (req.fields.email && req.fields.password && req.fields.username) {
+          // console.log(req.fields);
+          // console.log(req.files);
           const token = uid2(64);
           const salt = uid2(64);
           const hash = SHA256(req.fields.password + salt).toString(encBase64);
@@ -45,11 +47,12 @@ router.post("/signup", async (req, res) => {
             token: user.token,
             username: user.username,
           };
-
-          if (req.files.files.path) {
+          // console.log(req.files);
+          if (req.files.files) {
+            console.log(req.files);
             //   console.log("pic path : ", req.files.files.path);
             const pictureToUpload = await cloudinary.uploader.upload(
-              req.files.files.path,
+              req.files?.files.path,
               //   "gamepad_upload",
               {
                 folder: `gamepad/user-image/${user._id}`,
