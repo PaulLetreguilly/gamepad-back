@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+// const games = require("../games.json");
 
 router.get("/games", async (req, res) => {
   try {
@@ -28,13 +29,9 @@ router.get("/games", async (req, res) => {
     const response = await axios.get(`https://api.rawg.io/api/games`, {
       params: body,
     });
-    // console.log(response.data);
     res.json(response.data);
   } catch (error) {
     res.status(400).json({ message: error.message });
-    // res.send("not ok");
-    console.log(error.message);
-    // console.log("AH", error.response.data.error);
   }
 });
 
@@ -57,8 +54,8 @@ router.get("/game/series/:slug", async (req, res) => {
     const response = await axios.get(
       `https://api.rawg.io/api/games/${req.params.slug}/game-series?key=${process.env.API_KEY}`
     );
-    // console.log(response.data);
     res.status(200).json(response.data);
+    // res.json({ related: { results: [{}] } });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -70,6 +67,7 @@ router.get("/games/platforms", async (req, res) => {
       `https://api.rawg.io/api/platforms?key=${process.env.API_KEY}&page_size=51`
     );
     res.status(200).json(response.data);
+    // res.json(games.platforms);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -80,6 +78,7 @@ router.get("/games/genres", async (req, res) => {
       `https://api.rawg.io/api/genres?key=${process.env.API_KEY}`
     );
     res.status(200).json(response.data);
+    // res.json(games.genres);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

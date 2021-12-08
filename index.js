@@ -17,8 +17,6 @@ app.use(favorite, game, review, user);
 
 mongoose.connect(process.env.MONGODB_URI, {
   //   useNewUrlParser: true,
-  //   useUnifiedTopology: true,
-  //   useCreateIndex: true,
 });
 
 app.get("/", (req, res) => {
