@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const isAuthenticated = require("../middleware/isAuthenticated");
+// const { findOne, findById } = require("../models/Review");
 const Review = require("../models/Review");
+const Comments = require("../models/Comments");
 
 router.post("/game/reviews", async (req, res) => {
   try {
@@ -103,6 +105,25 @@ router.post("/review/undislike", isAuthenticated, async (req, res) => {
     review.markModified("dislike");
     await review.save();
     res.status(200).send("dislike updated");
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.post("/review/:id/comments", isAuthenticated, async (req, res) => {
+  try {
+    const user = req.user;
+    const review = await Review.findById(req.params.id);
+    const comment = new Comments({
+      user: user,
+      message: req.fields.message,
+    });
+    comment.populate("user");
+    review.comments.push(comment);
+
+    await comment.save();
+    await review.save();
+    res.json(review.comments);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

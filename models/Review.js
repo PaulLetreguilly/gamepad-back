@@ -11,5 +11,7 @@ const Review = mongoose.model("Review", {
   title: String,
   description: String,
   game: Object,
+  comments: [{ type: mongoose.Schema.Types.Mixed, ref: "User" }],
+  // comments: [{ Object }],
 });
 module.exports = Review;
